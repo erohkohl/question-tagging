@@ -1,4 +1,4 @@
-# Tagging Stack-Overflow questions with deep neural networks
+## Tagging Stack-Overflow questions with deep neural networks
 Project idea from [Awesome Deep Learning Project Ideas](https://github.com/NirantK/awesome-project-ideas)
 
 #### Data
