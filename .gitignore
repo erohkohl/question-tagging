@@ -1,4 +1,6 @@
-data/
+question_tags.csv
+questions.csv
+
 .pytest_cache/
 
 # Byte-compiled / optimized / DLL files

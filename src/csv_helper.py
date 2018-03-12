@@ -45,7 +45,7 @@ def reduce(raw, n) -> List:
     return most
 
 
-def preprocess(most) -> (List, List):
+def pre_process(most) -> (List, List):
     train_input = []
     train_output = []
     train = []
@@ -78,12 +78,12 @@ def export(path, input, output, n_export):
     pass
 
 
-def _import(path):
+def _import(path) -> (List, List):
     pass
 
 
 if __name__ == "__main__":
     read_tuple = read('data/questions.csv', 'data/question_tags.csv')
     reduced_tuple = reduce(read_tuple, 20)
-    input, output = preprocess(reduced_tuple)
+    input, output = pre_process(reduced_tuple)
     export('data/tagged_questions.csv', input, output, 10000)
