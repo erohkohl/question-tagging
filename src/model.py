@@ -5,15 +5,23 @@ import csv_helper
 import encoder
 import normailzer as norm
 
-N_INPUT = 1000  # 10000
+N_INPUT = 1000
 N_TRAIN = int(N_INPUT * 0.95)
 N_TEST = int(N_INPUT * 0.05)
 N_CLASSES = 5
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.0001
 N_EPOCHS = 1000000
 N_STEPS = 100
-N_HIDDEN_NEURONS = 64
-N_LAYERS = 6
+N_HIDDEN_NEURONS = 256
+N_LAYERS = 10
+
+# Anonymous functions for adding sigmoid and softmax layer as wells as
+# for initializing variables with zeros and uniform random values between
+# -1 and +1.
+act = lambda l, w, b: tf.nn.sigmoid(tf.add(tf.matmul(l, w), b))
+soft = lambda l, w, b: tf.nn.softmax(tf.add(tf.matmul(l, w), b))
+zeros = lambda h: tf.Variable(tf.zeros([h]))
+random = lambda i, o: tf.Variable(tf.random_uniform([i, o], -1, 1))
 
 
 def _eval(prediction, target) -> float:
@@ -29,23 +37,23 @@ def _eval(prediction, target) -> float:
 
 if __name__ == "__main__":
 
+    # Read data from dump and map each label to it's one hot vector
     csv_input, csv_output = csv_helper._import('data/tagged_questions.csv', N_CLASSES)
     for i in range(0, len(csv_output)):
         csv_output[i] = encoder.one_hot(int(csv_output[i]), N_CLASSES)
     input_size = len(csv_input[0])
 
+    # Split data into training and test set
     train_input, train_output = csv_input[:N_TRAIN], csv_output[:N_TRAIN]
     test_input, test_output = csv_input[N_TRAIN:N_TRAIN + N_TEST], csv_output[N_TRAIN:N_TRAIN + N_TEST]
     train_input, test_input = norm.standard(train_input, test_input)
 
+    # Set TensorFlows placeholder for training input, target value and test input
     ph_input = tf.placeholder(tf.float32, shape=[N_TRAIN, input_size])
     ph_target = tf.placeholder(tf.float32, shape=[N_TRAIN, N_CLASSES])
     ph_test = tf.placeholder(tf.float32, shape=[N_TEST, input_size])
 
-    act = lambda l, w, b: tf.nn.sigmoid(tf.add(tf.matmul(l, w), b))
-    zeros = lambda h: tf.Variable(tf.zeros([h]))
-    random = lambda i, o: tf.Variable(tf.random_uniform([i, o], -1, 1))
-
+    # Setup neural net: weights, biases and connect layers
     weights = [random(input_size, N_HIDDEN_NEURONS)]
     biases = [zeros(N_HIDDEN_NEURONS)]
     layers = [act(ph_input, weights[0], biases[0])]
@@ -59,10 +67,13 @@ if __name__ == "__main__":
 
     weights.append(random(N_HIDDEN_NEURONS, N_CLASSES))
     biases.append(zeros(N_CLASSES))
-    layers.append(act(layers[N_LAYERS - 2], weights[N_LAYERS - 1], biases[N_LAYERS - 1]))
-    test_layers.append(act(test_layers[N_LAYERS - 2], weights[N_LAYERS - 1], biases[N_LAYERS - 1]))
+    layers.append(soft(layers[N_LAYERS - 2], weights[N_LAYERS - 1], biases[N_LAYERS - 1]))
+    test_layers.append(soft(test_layers[N_LAYERS - 2], weights[N_LAYERS - 1], biases[N_LAYERS - 1]))
 
+    # Add node to graph that calculates mean squared error
     LOSS = tf.nn.l2_loss(layers[N_LAYERS - 1] - ph_target)
+
+    # Initialize optimizer that uses gradient descent
     optimizer = tf.train.GradientDescentOptimizer(LEARNING_RATE).minimize(LOSS)
 
     saver = tf.train.Saver()
@@ -72,6 +83,9 @@ if __name__ == "__main__":
 
     losses = []
 
+    # Run training and check depended on N_STEPS the relative number of correct
+    # classified training and test samples as well as plot the loss function in
+    # addition to it's number of epochs.
     for i in range(N_EPOCHS):
         train_dict = {ph_input: train_input, ph_target: train_output}
         sess.run(optimizer, feed_dict=train_dict)
