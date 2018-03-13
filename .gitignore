@@ -1,5 +1,7 @@
 question_tags.csv
 questions.csv
+xor.py
+xor_bsp.py
 
 .pytest_cache/
 

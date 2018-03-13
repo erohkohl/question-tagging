@@ -1,49 +1,92 @@
+import matplotlib.pyplot as plt
 import tensorflow as tf
 
-N_TRAIN = 100
-N_CLASSES = 20
-LEARNING_RATE = 0.000001
-N_EPOCHS = 10000000
-N_HIDDEN_NEURONS = 256
+import csv_helper
+import encoder
+import normailzer as norm
+
+N_INPUT = 1000  # 10000
+N_TRAIN = int(N_INPUT * 0.95)
+N_TEST = int(N_INPUT * 0.05)
+N_CLASSES = 5
+LEARNING_RATE = 0.001
+N_EPOCHS = 1000000
+N_STEPS = 100
+N_HIDDEN_NEURONS = 64
+N_LAYERS = 6
+
+
+def _eval(prediction, target) -> float:
+    n_correct = 0
+    n = len(prediction)
+    for p, t in zip(prediction, target):
+        # get most likely class
+        for i in range(0, len(p)):
+            if p[i] == max(p) and t[i] == 1:
+                n_correct += 1
+    return (float(n_correct) / float(n)) * 100.0
+
 
 if __name__ == "__main__":
-    train_input, train_output = preprocess_data()
-    n_input = len(train_input[0])
 
-    input = tf.placeholder(tf.float32, shape=[N_TRAIN, n_input])
-    target = tf.placeholder(tf.float32, shape=[N_TRAIN, N_CLASSES])
+    csv_input, csv_output = csv_helper._import('data/tagged_questions.csv', N_CLASSES)
+    for i in range(0, len(csv_output)):
+        csv_output[i] = encoder.one_hot(int(csv_output[i]), N_CLASSES)
+    input_size = len(csv_input[0])
 
-    W_1 = tf.Variable(tf.random_uniform([n_input, N_HIDDEN_NEURONS], -1, 1))
-    W_2 = tf.Variable(tf.random_uniform([N_HIDDEN_NEURONS, N_HIDDEN_NEURONS], -1, 1))
-    W_3 = tf.Variable(tf.random_uniform([N_HIDDEN_NEURONS, N_HIDDEN_NEURONS], -1, 1))
-    W_4 = tf.Variable(tf.random_uniform([N_HIDDEN_NEURONS, N_HIDDEN_NEURONS], -1, 1))
-    W_5 = tf.Variable(tf.random_uniform([N_HIDDEN_NEURONS, N_HIDDEN_NEURONS], -1, 1))
-    W_6 = tf.Variable(tf.random_uniform([N_HIDDEN_NEURONS, N_CLASSES], -1, 1))
+    train_input, train_output = csv_input[:N_TRAIN], csv_output[:N_TRAIN]
+    test_input, test_output = csv_input[N_TRAIN:N_TRAIN + N_TEST], csv_output[N_TRAIN:N_TRAIN + N_TEST]
+    train_input, test_input = norm.standard(train_input, test_input)
 
-    B_1 = tf.Variable(tf.zeros([N_HIDDEN_NEURONS]))
-    B_2 = tf.Variable(tf.zeros([N_HIDDEN_NEURONS]))
-    B_3 = tf.Variable(tf.zeros([N_HIDDEN_NEURONS]))
-    B_4 = tf.Variable(tf.zeros([N_HIDDEN_NEURONS]))
-    B_5 = tf.Variable(tf.zeros([N_HIDDEN_NEURONS]))
-    B_6 = tf.Variable(tf.zeros([N_CLASSES]))
+    ph_input = tf.placeholder(tf.float32, shape=[N_TRAIN, input_size])
+    ph_target = tf.placeholder(tf.float32, shape=[N_TRAIN, N_CLASSES])
+    ph_test = tf.placeholder(tf.float32, shape=[N_TEST, input_size])
 
-    hidden_layer_1 = tf.nn.sigmoid(tf.add(tf.matmul(input, W_1), B_1))
-    hidden_layer_2 = tf.nn.sigmoid(tf.add(tf.matmul(hidden_layer_1, W_2), B_2))
-    hidden_layer_3 = tf.nn.sigmoid(tf.add(tf.matmul(hidden_layer_1, W_3), B_3))
-    hidden_layer_4 = tf.nn.sigmoid(tf.add(tf.matmul(hidden_layer_1, W_4), B_4))
-    hidden_layer_5 = tf.nn.sigmoid(tf.add(tf.matmul(hidden_layer_1, W_5), B_5))
-    output_layer = tf.nn.softmax(tf.add(tf.matmul(hidden_layer_2, W_6), B_6))
+    act = lambda l, w, b: tf.nn.sigmoid(tf.add(tf.matmul(l, w), b))
+    zeros = lambda h: tf.Variable(tf.zeros([h]))
+    random = lambda i, o: tf.Variable(tf.random_uniform([i, o], -1, 1))
 
-    LOSS = tf.nn.l2_loss(output_layer - target)
+    weights = [random(input_size, N_HIDDEN_NEURONS)]
+    biases = [zeros(N_HIDDEN_NEURONS)]
+    layers = [act(ph_input, weights[0], biases[0])]
+    test_layers = [act(ph_test, weights[0], biases[0])]
+
+    for i in range(1, N_LAYERS - 1):
+        weights.append(random(N_HIDDEN_NEURONS, N_HIDDEN_NEURONS))
+        biases.append(zeros(N_HIDDEN_NEURONS))
+        layers.append(act(layers[i - 1], weights[i], biases[i]))
+        test_layers.append(act(test_layers[i - 1], weights[i], biases[i]))
+
+    weights.append(random(N_HIDDEN_NEURONS, N_CLASSES))
+    biases.append(zeros(N_CLASSES))
+    layers.append(act(layers[N_LAYERS - 2], weights[N_LAYERS - 1], biases[N_LAYERS - 1]))
+    test_layers.append(act(test_layers[N_LAYERS - 2], weights[N_LAYERS - 1], biases[N_LAYERS - 1]))
+
+    LOSS = tf.nn.l2_loss(layers[N_LAYERS - 1] - ph_target)
     optimizer = tf.train.GradientDescentOptimizer(LEARNING_RATE).minimize(LOSS)
 
+    saver = tf.train.Saver()
     init = tf.global_variables_initializer()
     sess = tf.Session()
     sess.run(init)
 
-    print("graph init DONE")
+    losses = []
+
     for i in range(N_EPOCHS):
-        train_dict = feed_dict = {input: train_input[:N_TRAIN], target: train_output[:N_TRAIN]}
+        train_dict = {ph_input: train_input, ph_target: train_output}
         sess.run(optimizer, feed_dict=train_dict)
-        if i % 10000 == 0:
-            print('Epoch = ', i, ', Loss = ', sess.run(LOSS, feed_dict=train_dict))
+        if i % N_STEPS == 0:
+            actual_loss = sess.run(LOSS, feed_dict=train_dict)
+            losses.append(actual_loss)
+            plt.plot(losses)
+            plt.draw()
+            plt.pause(0.001)
+
+            print('Epoch = ', i, ', Loss = ', actual_loss,
+                  ', Train Coverage: ',
+                  _eval(sess.run(layers[N_LAYERS - 1], feed_dict={ph_input: train_input}), train_output), '%'
+                  , ', Test Coverage: ',
+                  _eval(sess.run(test_layers[N_LAYERS - 1], feed_dict={ph_test: test_input}), test_output), '%'
+                  )
+
+            saver.save(sess, "data/model.ckpt")

@@ -78,12 +78,20 @@ def export(path, input, output, n_export):
     pass
 
 
-def _import(path) -> (List, List):
-    pass
+def _import(path, n_classes) -> (List, List):
+    questions = []
+    tags = []
+    with open(path) as tagged_questions:
+        for t in csv.reader(tagged_questions):
+            tag_id = int(t[3])
+            if tag_id < n_classes:
+                questions.append([int(t[0])] + [int(t[1])] + [int(t[2])])
+                tags.append(tag_id)
+    return questions, tags
 
 
 if __name__ == "__main__":
     read_tuple = read('data/questions.csv', 'data/question_tags.csv')
-    reduced_tuple = reduce(read_tuple, 20)
+    reduced_tuple = reduce(read_tuple, 10)
     input, output = pre_process(reduced_tuple)
     export('data/tagged_questions.csv', input, output, 10000)
