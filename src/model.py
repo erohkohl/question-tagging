@@ -1,3 +1,5 @@
+import logging
+
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
@@ -5,26 +7,26 @@ import csv_helper
 import encoder
 import normailzer as norm
 
-N_INPUT = 1000
-N_TRAIN = int(N_INPUT * 0.95)
-N_TEST = int(N_INPUT * 0.05)
-N_CLASSES = 5
+N_INPUT = 10000
+N_TRAIN = int(N_INPUT * 0.9)
+N_TEST = int(N_INPUT * 0.1)
+N_CLASSES = 10
 LEARNING_RATE = 0.0001
 N_EPOCHS = 1000000
-N_STEPS = 100
-N_HIDDEN_NEURONS = 256
-N_LAYERS = 10
+N_STEPS = 1000
+N_HIDDEN_NEURONS = 128
+N_LAYERS = 4
 
 # Anonymous functions for adding sigmoid and softmax layer as wells as
 # for initializing variables with zeros and uniform random values between
 # -1 and +1.
-act = lambda l, w, b: tf.nn.sigmoid(tf.add(tf.matmul(l, w), b))
+act = lambda l, w, b: tf.nn.relu(tf.add(tf.matmul(l, w), b))
 soft = lambda l, w, b: tf.nn.softmax(tf.add(tf.matmul(l, w), b))
 zeros = lambda h: tf.Variable(tf.zeros([h]))
 random = lambda i, o: tf.Variable(tf.random_uniform([i, o], -1, 1))
 
 
-def _eval(prediction, target) -> float:
+def accuracy(prediction, target) -> float:
     n_correct = 0
     n = len(prediction)
     for p, t in zip(prediction, target):
@@ -36,6 +38,8 @@ def _eval(prediction, target) -> float:
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-8s %(message)s')
+    logger = logging.getLogger(__name__)
 
     # Read data from dump and map each label to it's one hot vector
     csv_input, csv_output = csv_helper._import('data/tagged_questions.csv', N_CLASSES)
@@ -82,25 +86,29 @@ if __name__ == "__main__":
     sess.run(init)
 
     losses = []
+    epoch = 0
 
     # Run training and check depended on N_STEPS the relative number of correct
     # classified training and test samples as well as plot the loss function in
     # addition to it's number of epochs.
-    for i in range(N_EPOCHS):
+    acc_train = accuracy(sess.run(layers[N_LAYERS - 1], feed_dict={ph_input: train_input}), train_output)
+    while acc_train < 90.0:
         train_dict = {ph_input: train_input, ph_target: train_output}
         sess.run(optimizer, feed_dict=train_dict)
+        i += 1
         if i % N_STEPS == 0:
+            acc_train = accuracy(sess.run(layers[N_LAYERS - 1], feed_dict={ph_input: train_input}), train_output)
+            acc_test = accuracy(sess.run(test_layers[N_LAYERS - 1], feed_dict={ph_test: test_input}), test_output)
             actual_loss = sess.run(LOSS, feed_dict=train_dict)
             losses.append(actual_loss)
-            plt.plot(losses)
-            plt.draw()
-            plt.pause(0.001)
 
-            print('Epoch = ', i, ', Loss = ', actual_loss,
-                  ', Train Coverage: ',
-                  _eval(sess.run(layers[N_LAYERS - 1], feed_dict={ph_input: train_input}), train_output), '%'
-                  , ', Test Coverage: ',
-                  _eval(sess.run(test_layers[N_LAYERS - 1], feed_dict={ph_test: test_input}), test_output), '%'
-                  )
+            plt.plot(losses, 'b')
+            plt.xlabel('Iterations *1000 ')
+            plt.ylabel('Loss ')
+            # plt.draw()
+            # plt.pause(0.001)
+            logger.info('-  Epoch = ' + str(i) + ', Loss = ' + str(actual_loss) + ', Train Coverage: ' +
+                        str(acc_train) + '%' + ', Test Coverage: ' + str(acc_test) + '%')
 
             saver.save(sess, "data/model.ckpt")
+            plt.savefig('data/loss.png')

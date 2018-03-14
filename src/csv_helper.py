@@ -94,4 +94,4 @@ if __name__ == "__main__":
     read_tuple = read('data/questions.csv', 'data/question_tags.csv')
     reduced_tuple = reduce(read_tuple, 10)
     input, output = pre_process(reduced_tuple)
-    export('data/tagged_questions.csv', input, output, 10000)
+    export('data/tagged_questions.csv', input, output, 100000)
