@@ -5,7 +5,7 @@ import tensorflow as tf
 
 import csv_helper
 import encoder
-import normailzer as norm
+import normalizer as norm
 
 N_INPUT = 10000
 N_TRAIN = int(N_INPUT * 0.9)
@@ -107,7 +107,7 @@ if __name__ == "__main__":
             plt.ylabel('Loss ')
             # plt.draw()
             # plt.pause(0.001)
-            logger.info('-  Epoch = ' + str(i) + ', Loss = ' + str(actual_loss) + ', Train Coverage: ' +
+            logger.info('-     Epoch = ' + str(i) + ', Loss = ' + str(actual_loss) + ', Train Coverage: ' +
                         str(acc_train) + '%' + ', Test Coverage: ' + str(acc_test) + '%')
 
             saver.save(sess, "data/model.ckpt")
