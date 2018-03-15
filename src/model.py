@@ -40,6 +40,7 @@ def accuracy(prediction, target) -> float:
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-8s %(message)s')
     logger = logging.getLogger(__name__)
+    model_file = "data/trained_models/model-" + str(N_LAYERS) + "-" + str(N_HIDDEN_NEURONS) + ".ckpt"
 
     # Read data from dump and map each label to it's one hot vector
     csv_input, csv_output = csv_helper._import('data/tagged_questions.csv', N_CLASSES)
@@ -81,9 +82,13 @@ if __name__ == "__main__":
     optimizer = tf.train.GradientDescentOptimizer(LEARNING_RATE).minimize(LOSS)
 
     saver = tf.train.Saver()
-    init = tf.global_variables_initializer()
     sess = tf.Session()
-    sess.run(init)
+
+    try:
+        saver.restore(sess, model_file)
+    except:
+        init = tf.global_variables_initializer()
+        sess.run(init)
 
     losses = []
     epoch = 0
@@ -105,10 +110,10 @@ if __name__ == "__main__":
             plt.plot(losses, 'b')
             plt.xlabel('Iterations *1000 ')
             plt.ylabel('Loss ')
-            # plt.draw()
-            # plt.pause(0.001)
+            plt.draw()
+            plt.pause(0.001)
             logger.info('-     Epoch = ' + str(i) + ', Loss = ' + str(actual_loss) + ', Train Coverage: ' +
                         str(acc_train) + '%' + ', Test Coverage: ' + str(acc_test) + '%')
 
-            saver.save(sess, "data/model.ckpt")
+            saver.save(sess, model_file)
             plt.savefig('data/loss.png')
