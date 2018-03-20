@@ -7,15 +7,15 @@ import csv_helper
 import encoder
 import normalizer as norm
 
-N_INPUT = 800
+N_INPUT = 1000
 N_TRAIN = int(N_INPUT * 0.9)
 N_TEST = int(N_INPUT * 0.1)
 N_CLASSES = 3
 LEARNING_RATE = 0.001
-N_EPOCHS = 1000000
+N_EPOCHS = 250000
 N_STEPS = 100
-N_HIDDEN_NEURONS = 128
-N_HIDDEN_LAYERS = 1
+N_HIDDEN_NEURONS = 3
+N_HIDDEN_LAYERS = 6
 
 # Anonymous functions for adding sigmoid and softmax layer as wells as
 # for initializing variables with zeros and uniform random values between
@@ -35,7 +35,6 @@ def accuracy(prediction, target) -> float:
             if p[i] == max(p) and t[i] == 1:
                 n_correct += 1
     return (float(n_correct) / float(n)) * 100.0
-
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)-8s %(message)s')
@@ -89,7 +88,6 @@ if __name__ == "__main__":
 
     saver = tf.train.Saver()
     sess = tf.Session()
-
     try:
         saver.restore(sess, model_file)
     except:
@@ -103,11 +101,11 @@ if __name__ == "__main__":
     # classified training and test samples as well as plot the loss function in
     # addition to it's number of epochs.
     acc_train = accuracy(sess.run(layers[N_HIDDEN_LAYERS + 1], feed_dict={ph_input: train_input}), train_output)
-    while acc_train < 90.0:
+    while acc_train < 90.0 and epoch < N_EPOCHS:
         train_dict = {ph_input: train_input, ph_target: train_output}
         sess.run(optimizer, feed_dict=train_dict)
-        i += 1
-        if i % N_STEPS == 0:
+        epoch += 1
+        if epoch % N_STEPS == 0:
             acc_train = accuracy(sess.run(layers[N_HIDDEN_LAYERS + 1], feed_dict={ph_input: train_input}), train_output)
             acc_test = accuracy(sess.run(test_layers[N_HIDDEN_LAYERS + 1], feed_dict={ph_test: test_input}),
                                 test_output)
@@ -115,12 +113,12 @@ if __name__ == "__main__":
             losses.append(actual_loss)
 
             plt.plot(losses, 'b')
-            plt.xlabel('Iterations *1000 ')
+            plt.xlabel('Iterations *100 ')
             plt.ylabel('Loss ')
             plt.draw()
             plt.pause(0.001)
-            logger.info('-     Epoch = ' + str(i) + ', Loss = ' + str(actual_loss) + ', Train Coverage: ' +
+            logger.info('-     Epoch = ' + str(epoch) + ', Loss = ' + str(actual_loss) + ', Train Coverage: ' +
                         str(acc_train) + '%' + ', Test Coverage: ' + str(acc_test) + '%')
-
-    saver.save(sess, model_file)
-    plt.savefig('data/loss.png')
+    if acc_train >= 90.0:
+        saver.save(sess, model_file)
+        plt.savefig('data/loss.png')
