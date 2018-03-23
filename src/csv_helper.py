@@ -52,7 +52,12 @@ def pre_process(most) -> (List, List):
     tags_vec = {}
     tag_vec = 0
     for m in most:
-        input = [m[SCORE], m[OWNER_ID], m[ANS_COUNT]]
+        input = [m[SCORE], m[ANS_COUNT]]
+        split = [int(i) for i in str(m[OWNER_ID])]
+        for i in range(len(split), 10):
+            split.append(0)
+        for i in split:
+            input.append(i)
         try:
             target = tags_vec[m[TAG_ID]]
         except:
@@ -85,13 +90,14 @@ def _import(path, n_classes) -> (List, List):
         for t in csv.reader(tagged_questions):
             tag_id = int(t[3])
             if tag_id < n_classes:
-                questions.append([int(t[0])] + [int(t[1])] + [int(t[2])])
+                questions.append([int(t[0])] + [int(t[1])] + [int(t[2])] + [int(t[3])] + [int(t[4])]
+                                 + [int(t[5])] + [int(t[6])] + [int(t[7])] + [int(t[8])] + [int(t[9])])
                 tags.append(tag_id)
     return questions, tags
 
 
 if __name__ == "__main__":
     read_tuple = read('data/questions.csv', 'data/question_tags.csv')
-    reduced_tuple = reduce(read_tuple, 10)
+    reduced_tuple = reduce(read_tuple, 50)
     input, output = pre_process(reduced_tuple)
     export('data/tagged_questions.csv', input, output, 100000)
