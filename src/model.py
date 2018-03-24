@@ -12,10 +12,10 @@ N_TRAIN = int(N_INPUT / 0.9)
 N_TEST = int(N_INPUT / 0.9 * 0.1)
 N_CLASSES = 50
 LEARNING_RATE = 0.001
-N_EPOCHS = 6000
+N_EPOCHS = 20000
 N_STEPS = 100
-N_HIDDEN_NEURONS = 12
-N_HIDDEN_LAYERS = 3
+N_HIDDEN_NEURONS = [10, 12, 24, 48]
+N_HIDDEN_LAYERS = len(N_HIDDEN_NEURONS)
 
 # Anonymous functions for adding sigmoid and softmax layer as wells as
 # for initializing variables with zeros and uniform random values between
@@ -28,24 +28,25 @@ random = lambda i, o: tf.Variable(tf.random_uniform([i, o], -1, 1))
 
 def build_model():
     # Setup neural net: weights, biases and connect layers
-    weights = [random(input_size, N_HIDDEN_NEURONS)]
-    biases = [zeros(N_HIDDEN_NEURONS)]
+    weights = [random(input_size, N_HIDDEN_NEURONS[0])]
+    biases = [zeros(N_HIDDEN_NEURONS[0])]
     layers = [act(ph_in, weights[0], biases[0])]
     test_layers = [act(ph_test_in, weights[0], biases[0])]
 
-    for i in range(1, N_HIDDEN_LAYERS + 1):
-        weights.append(random(N_HIDDEN_NEURONS, N_HIDDEN_NEURONS))
-        biases.append(zeros(N_HIDDEN_NEURONS))
+    # for i in range(1, N_HIDDEN_LAYERS + 1):
+    for i in range(1, len(N_HIDDEN_NEURONS)):
+        weights.append(random(N_HIDDEN_NEURONS[i - 1], N_HIDDEN_NEURONS[i]))
+        biases.append(zeros(N_HIDDEN_NEURONS[i]))
         layers.append(act(layers[i - 1], weights[i], biases[i]))
         test_layers.append(act(test_layers[i - 1], weights[i], biases[i]))
 
-    weights.append(random(N_HIDDEN_NEURONS, N_CLASSES))
+    weights.append(random(N_HIDDEN_NEURONS[N_HIDDEN_LAYERS - 1], N_CLASSES))
     biases.append(zeros(N_CLASSES))
-    layers.append(soft(layers[N_HIDDEN_LAYERS], weights[N_HIDDEN_LAYERS + 1], biases[N_HIDDEN_LAYERS + 1]))
+    layers.append(soft(layers[N_HIDDEN_LAYERS - 1], weights[N_HIDDEN_LAYERS], biases[N_HIDDEN_LAYERS]))
     test_layers.append(
-        soft(test_layers[N_HIDDEN_LAYERS], weights[N_HIDDEN_LAYERS + 1], biases[N_HIDDEN_LAYERS + 1]))
+        soft(test_layers[N_HIDDEN_LAYERS - 1], weights[N_HIDDEN_LAYERS], biases[N_HIDDEN_LAYERS]))
 
-    return layers[N_HIDDEN_LAYERS + 1], test_layers[N_HIDDEN_LAYERS + 1]
+    return layers[N_HIDDEN_LAYERS], test_layers[N_HIDDEN_LAYERS]
 
 
 def record():
