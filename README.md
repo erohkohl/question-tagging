@@ -13,7 +13,7 @@ The neural net was implemented as computational graph with the popular machine l
 neurons. The below picture shows the network architecture. It consists of four hidden layers with 10, 12, 24 and 48 neurons. Each neuron in the hidden layers
 has a [ReLU](https://en.wikipedia.org/wiki/Rectifier_(neural_networks)) activation. Further neural net's output layer holds one neuron
 for each question tag and applies [Softmax](https://en.wikipedia.org/wiki/Softmax_function) function to their activation for classification purpose.
-![net](https://github.com/erohkohl/question-tagging/blob/master/data/ann.png)
+![net](data/ann.png)
 
 #### Train model
 To train model, simply run the following command in the root folder of this project. Therefore Python 3
@@ -26,4 +26,4 @@ $ python src/model.py
 This models reaches an accuracy of over **85%** for training and test data set. The below picture shows models loss
 in relation to training epoch.
 
-<img src="https://github.com/erohkohl/question-tagging/blob/master/data/loss.png" alt="Drawing" style="width: 150px;"/>
+<img src="data/loss.png" alt="Drawing" style="width: 150px;"/>
