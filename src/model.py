@@ -3,9 +3,7 @@ import logging
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-import csv_helper
-import encoder
-import normalizer as norm
+from util import encoder, csv_helper, normalizer as norm
 
 N_INPUT = 50000
 N_TRAIN = int(N_INPUT / 0.9)

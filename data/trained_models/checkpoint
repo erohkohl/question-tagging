@@ -1,2 +1,2 @@
-model_checkpoint_path: "model-32-6.ckpt"
-all_model_checkpoint_paths: "model-32-6.ckpt"
+model_checkpoint_path: "model-4-[10, 12, 24, 48].ckpt"
+all_model_checkpoint_paths: "model-4-[10, 12, 24, 48].ckpt"
