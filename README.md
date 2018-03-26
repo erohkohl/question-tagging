@@ -24,4 +24,4 @@ $ python src/model.py
 This models reaches an accuracy of over **85%** for training and test data set. The below picture shows models loss
 in relation to training epoch.
 
-![loss](https://github.com/erohkohl/question-tagging/blob/master/data/loss.png)
+![loss](https://github.com/erohkohl/question-tagging/blob/master/data/loss.png =250x)
