@@ -9,8 +9,7 @@ used questions tags like *java*, *c++* or *html*.
 
 #### Neural network
 The neural net was implemented as computational graph with the popular machine learning library [TensorFlow](https://www.tensorflow.org/). You can find my model in the following Python module:
-[src/model.py](https://github.com/erohkohl/question-tagging/blob/master/src/model.py). It consists of twelve hidden layers and each of them is equipped with eight
-neurons. The below picture shows the network architecture. It consists of four hidden layers with 10, 12, 24 and 48 neurons. Each neuron in the hidden layers
+[src/model.py](https://github.com/erohkohl/question-tagging/blob/master/src/model.py). The below picture shows the network architecture. It consists of four hidden layers with 10, 12, 24 and 48 neurons. Each neuron in the hidden layers
 has a [ReLU](https://en.wikipedia.org/wiki/Rectifier_(neural_networks)) activation. Further neural net's output layer holds one neuron
 for each question tag and applies [Softmax](https://en.wikipedia.org/wiki/Softmax_function) function to their activation for classification purpose.
 ![net](data/ann.png)
