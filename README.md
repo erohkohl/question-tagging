@@ -23,6 +23,8 @@ $ python src/model.py
 
 #### Results
 This models reaches an accuracy of over **85%** for the train and test data set after 20000 iterations of training. The below picture shows models loss
-in relation to its training epochs.
+in relation to its training epochs. Under [data/trained_models](https://github.com/erohkohl/question-tagging/tree/master/data/trained_models)
+you can find this neural net as pre trained model with its adjusted weights and biases. Use TensorFlows [tf.train.Saver](https://www.tensorflow.org/api_docs/python/tf/train/Saver)
+to load this model and make your own predictions against this [tagged questions](https://github.com/erohkohl/question-tagging/blob/master/data/tagged_questions.csv).
 
 <img src="data/loss.png" alt="Drawing" style="width: 150px;"/>
