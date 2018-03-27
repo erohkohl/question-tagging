@@ -3,7 +3,7 @@ Project idea from [Awesome Deep Learning Project Ideas](https://github.com/Niran
 
 #### Data
 The training data set was originally downloaded from ["StackLite: Stack Overflow questions and tags"](https://www.kaggle.com/stackoverflow/stacklite)
-and are formally licenced by [Stack Exchange, Inc.](https://archive.org/details/stackexchange) under [cc-by-sa 3.0](http://creativecommons.org/licenses/by-sa/3.0/).
+and is formally licenced by [Stack Exchange, Inc.](https://archive.org/details/stackexchange) under [cc-by-sa 3.0](http://creativecommons.org/licenses/by-sa/3.0/).
 It contains the question score and answer count as well as the anonymous ID of its owner. The neural net tries to map this vector to one of the 50 frequently
 used question tags like *java*, *c++* or *html*.
 
