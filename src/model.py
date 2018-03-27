@@ -61,7 +61,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
     model_file = "data/trained_models/model-" + str(N_HIDDEN_LAYERS) + "-" + str(N_HIDDEN_NEURONS) + ".ckpt"
 
-    # Read data from dump and map each label to it's one hot vector
+    # Read data from dump and map each label to its one hot vector
     csv_input, csv_output = csv_helper._import('data/tagged_questions.csv', N_CLASSES)
     for i in range(0, len(csv_output)):
         csv_output[i] = encoder.one_hot(int(csv_output[i]), N_CLASSES)
@@ -82,8 +82,7 @@ if __name__ == "__main__":
 
     # Add node to graph that calculates mean squared error
     LOSS = tf.nn.l2_loss(net - ph_out)
-    accuracy = tf.reduce_mean(
-        tf.cast(tf.equal(tf.argmax(net, 1), tf.argmax(ph_out, 1)), tf.float32))
+    accuracy = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(net, 1), tf.argmax(ph_out, 1)), tf.float32))
 
     # Initialize optimizer that uses gradient descent
     optimizer = tf.train.AdamOptimizer(LEARNING_RATE).minimize(LOSS)
@@ -98,7 +97,7 @@ if __name__ == "__main__":
 
     # Run training and check depended on N_STEPS the relative number of correct
     # classified training and test samples as well as plot the loss function in
-    # addition to it's number of epochs.
+    # addition to its number of epochs.
     acc_train = sess.run(accuracy, feed_dict={ph_in: train_in, ph_out: train_out})
     while epoch < N_EPOCHS:
         train_dict = {ph_in: train_in, ph_out: train_out}
